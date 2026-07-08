@@ -47,7 +47,7 @@ def main():
     # 3. Define Base Models (Using our historically best parameters)
     print("\n--- Assembling the Perfect Stacking Classifier ---")
     
-    # Model 1: High Precision XGBoost (GPU)
+    # Model 1: High Precision XGBoost
     xgb_precision = XGBRFClassifier(
         n_estimators=400, max_depth=15, colsample_bynode=0.5, subsample=0.8, 
         eval_metric='logloss', random_state=42
