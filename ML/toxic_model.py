@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split, cross_val_predict
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, f1_score, precision_score, recall_score
 from xgboost import XGBClassifier
 from imblearn.pipeline import Pipeline as ImbPipeline
@@ -55,62 +55,14 @@ def main():
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # 3. Tuning Base Models with SMOTE in Pipeline
-    print("\n--- Tuning Base Models with SMOTE ---")
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    # 3. Defining Base Models with Optimal Parameters
+    print("\n--- Defining Base Models with Optimal Parameters ---")
     
-    models_to_test = {
-        "SVM": {
-            "model": SVC(probability=True, random_state=42),
-            "params": {
-                'classifier__kernel': ['linear', 'rbf'],
-                'classifier__C': [0.1, 1, 10],
-                'classifier__gamma': ['scale', 'auto', 0.1]
-            }
-        },
-        "Random Forest": {
-            "model": RandomForestClassifier(random_state=42, n_jobs=-1),
-            "params": {
-                'classifier__n_estimators': [50, 100],
-                'classifier__max_depth': [3, 5, 7],
-                'classifier__min_samples_split': [2, 5]
-            }
-        },
-        "XGBoost": {
-            "model": XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42, n_jobs=-1),
-            "params": {
-                'classifier__n_estimators': [50, 100],
-                'classifier__max_depth': [2, 3, 5],
-                'classifier__learning_rate': [0.01, 0.1, 0.2]
-            }
-        }
+    best_base_models = {
+        'SVM': SVC(C=0.1, gamma='scale', kernel='rbf', probability=True, random_state=42),
+        'Random Forest': RandomForestClassifier(max_depth=7, min_samples_split=5, n_estimators=50, random_state=42, n_jobs=-1),
+        'XGBoost': XGBClassifier(learning_rate=0.01, max_depth=3, n_estimators=50, use_label_encoder=False, eval_metric='logloss', random_state=42, n_jobs=-1)
     }
-
-    best_base_models = {}
-
-    for name, config in models_to_test.items():
-        print(f"\nTuning {name} + SMOTE...")
-        
-        # Create pipeline with SMOTE
-        pipeline = ImbPipeline([
-            ('smote', SMOTE(k_neighbors=5, random_state=42)),
-            ('classifier', config['model'])
-        ])
-        
-        grid_search = GridSearchCV(
-            estimator=pipeline,
-            param_grid=config['params'],
-            cv=cv,
-            scoring='roc_auc',
-            n_jobs=-1
-        )
-        
-        grid_search.fit(X_train_scaled, y_train)
-        print(f" Best CV ROC-AUC: {grid_search.best_score_:.4f}")
-        print(f" Best Params: {grid_search.best_params_}")
-        
-        # Save the best classifier (we extract it from the pipeline for stacking)
-        best_base_models[name] = grid_search.best_estimator_.named_steps['classifier']
 
     # 4. Assembling Stacking Classifier
     print("\n--- Assembling Stacking Classifier ---")
@@ -135,30 +87,10 @@ def main():
     print("Training Stacking Classifier...")
     final_pipeline.fit(X_train_scaled, y_train)
     
-    # 5. Threshold Tuning for Higher Recall
-    print("\n--- Tuning Final Decision Threshold (Targeting Recall >= 0.85) ---")
-    y_oof_proba = cross_val_predict(final_pipeline, X_train_scaled, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
-    
-    best_t = 0.5
-    best_prec = 0
-    best_rec = 0
-    thresholds = np.linspace(0.1, 0.9, 81)
-    
-    for t in thresholds:
-        y_oof_pred = (y_oof_proba >= t).astype(int)
-        rec = recall_score(y_train, y_oof_pred)
-        prec = precision_score(y_train, y_oof_pred, zero_division=0)
-        
-        if rec >= 0.85:
-            if prec > best_prec:
-                best_prec = prec
-                best_rec = rec
-                best_t = t
-                
-    if best_prec == 0:
-        best_t = 0.5 # fallback
-            
-    print(f"Optimal Probability Threshold found: {best_t:.2f} (OOF Recall: {best_rec:.4f}, OOF Precision: {best_prec:.4f})")
+    # 5. Setting Optimal Decision Threshold
+    print("\n--- Setting Optimal Decision Threshold (Targeting Recall >= 0.85) ---")
+    best_t = 0.22
+    print(f"Optimal Probability Threshold used: {best_t:.2f}")
 
     # 6. Final Evaluation on Holdout Test Set
     print("\n==================================================")

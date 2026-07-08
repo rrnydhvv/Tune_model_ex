@@ -11,7 +11,7 @@ from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from sklearn.linear_model import LogisticRegression
 from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
-from sklearn.model_selection import cross_val_predict
+
 from sklearn.metrics import classification_report, accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 
 def main():
@@ -88,33 +88,10 @@ def main():
     print("Training Perfect Pipeline (SMOTE + Feature Selection + Stacking)...")
     perfect_pipeline.fit(X_train_scaled, y_train)
 
-    # 5. Threshold Tuning for Ultimate Balance (Focusing on HIGH RECALL)
-    print("\n--- Tuning Final Decision Threshold (Target: Recall >= 0.80) ---")
-    y_oof_proba = cross_val_predict(perfect_pipeline, X_train_scaled, y_train, cv=5, method='predict_proba')[:, 1]
-    
-    best_t = 0.5
-    best_prec = 0
-    best_rec = 0
-    thresholds = np.linspace(0.1, 0.9, 81)
-    
-    for t in thresholds:
-        y_oof_pred = (y_oof_proba >= t).astype(int)
-        rec = recall_score(y_train, y_oof_pred)
-        prec = precision_score(y_train, y_oof_pred, zero_division=0)
-        
-        # We want a model that catches at least 80% of the disease cases (Recall >= 0.80)
-        # Among all thresholds that satisfy this, pick the one with the best Precision to minimize false alarms.
-        if rec >= 0.80:
-            if prec > best_prec:
-                best_prec = prec
-                best_rec = rec
-                best_t = t
-                
-    # If it couldn't find any threshold with Recall >= 0.80 (very unlikely), fallback to 0.5
-    if best_prec == 0:
-        best_t = 0.5
-            
-    print(f"Optimal Probability Threshold found: {best_t:.2f} (OOF Recall: {best_rec:.4f}, OOF Precision: {best_prec:.4f})")
+    # 5. Setting Optimal Decision Threshold (Focusing on HIGH RECALL)
+    print("\n--- Setting Optimal Decision Threshold (Target: Recall >= 0.80) ---")
+    best_t = 0.15
+    print(f"Optimal Probability Threshold used: {best_t:.2f}")
 
     # 6. Final Evaluation
     print("\n==================================================")
