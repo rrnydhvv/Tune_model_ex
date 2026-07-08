@@ -20,7 +20,8 @@ def main():
     print("="*50)
 
     # 1. Load Data
-    base_path = r"c:\Users\phucb\Documents\Code\Tune_model_ex\data\drug"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    base_path = os.path.join(current_dir, "..", "data", "drug")
     train_file = os.path.join(base_path, "DIA_trainingset_RDKit_descriptors.csv")
     test_file = os.path.join(base_path, "DIA_testset_RDKit_descriptors.csv")
 
