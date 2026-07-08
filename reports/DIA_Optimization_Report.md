@@ -3,7 +3,7 @@
 **Dữ liệu:** 477 mẫu huấn luyện, 198 đặc trưng phân tử (RDKit)
 
 > [!NOTE]
-> Báo cáo này tổng hợp quá trình nâng cấp mô hình từ một phiên bản Baseline cơ bản lên một Hệ thống Ensemble hoàn hảo, giải quyết triệt để các thách thức về mất cân bằng dữ liệu và tối ưu hóa theo các mục tiêu y tế khác nhau.
+> Báo cáo này tổng hợp quá trình nâng cấp mô hình từ một phiên bản Baseline cơ bản lên một hệ thống Ensemble, nhằm giải quyết các thách thức về mất cân bằng dữ liệu và đáp ứng các mục tiêu y tế khác nhau.
 
 ---
 
@@ -26,40 +26,40 @@
 
 ### Giai đoạn 3: Tối ưu Độ Chuẩn Xác bằng XGBoost
 - Nâng cấp từ Random Forest của Scikit-Learn lên `XGBRFClassifier` để tạo ra một thuật toán mạnh mẽ hơn với khả năng bắt ranh giới phức tạp trên CPU.
-- Mục tiêu: Tạo ra một bộ lọc "Bắt trúng 100%".
+- Mục tiêu: Tối ưu hóa khả năng nhận diện chính xác.
 - **Kết quả:** 
-  - Tại ngưỡng xác suất 0.54, mô hình đạt **Precision kỷ lục 89%**. 
+  - Tại ngưỡng xác suất 0.54, mô hình đạt **Precision 89%**. 
   - Nghĩa là 89% các loại thuốc bị cảnh báo thực sự mang rủi ro. F1-Score đạt **0.69**. 
-  - **Ứng dụng:** Tuyệt vời để sử dụng làm bước xác nhận cuối cùng nhằm loại bỏ báo động giả.
+  - **Ứng dụng:** Có thể sử dụng làm bước xác nhận cuối cùng nhằm loại bỏ báo động giả.
 
 ### Giai đoạn 4: Tối ưu Độ Nhạy (Max Recall trên CPU)
 - Khi mục tiêu y khoa thay đổi sang "Thà bắt nhầm còn hơn bỏ sót", chúng tôi thay đổi chiến thuật tập trung vào thuật toán.
 - Ép trọng số cực gắt (`class_weight={0: 1, 1: 10}`) và tối ưu hóa hệ số **F2-Score**.
 - **Kết quả:**
-  - Mô hình đạt **Recall 100%** ở ngưỡng tự nhiên và **93.3%** ở ngưỡng F2 tối ưu. Bắt gọn toàn bộ mầm mống rủi ro.
-  - **Đánh đổi:** Precision sụt giảm mạnh xuống còn khoảng 26-32%.
-  - **Ứng dụng:** Tuyệt vời làm Màng lọc thô (Screening) ở tuyến đầu.
+  - Mô hình đạt **Recall 100%** ở ngưỡng tự nhiên và **93.3%** ở ngưỡng F2 tối ưu. Nhận diện được hầu hết các trường hợp rủi ro.
+  - **Đánh đổi:** Precision sụt giảm xuống còn khoảng 26-32%.
+  - **Ứng dụng:** Phù hợp làm màng lọc thô (Screening) ở tuyến đầu.
 
 ---
 
-## 3. Giai Đoạn Tối Thượng: Siêu Mô Hình (Perfect Ensemble)
+## 3. Giai Đoạn 3: Mô Hình Kết Hợp (Ensemble)
 > [!IMPORTANT]
-> Thay vì phải chịu sự đánh đổi giữa Precision và Recall, chúng tôi đã sử dụng kỹ thuật **Stacking Classifier** để tạo ra một "Trí tuệ tập thể".
+> Thay vì phải chịu sự đánh đổi giữa Precision và Recall, chúng tôi đã sử dụng kỹ thuật **Stacking Classifier** để kết hợp các mô hình.
 
 **Cấu trúc Stacking:**
-1. **XGBoost:** Chuyên gia tăng cường Precision. Thuật toán này sử dụng kỹ thuật Gradient Boosting, xây dựng tuần tự các cây quyết định mà cây sau sẽ cố gắng sửa lỗi của cây trước. Nhờ vậy, nó cực kỳ sắc bén trong việc tìm ra các ranh giới phân loại phức tạp, giảm thiểu tối đa báo động giả (False Positive).
-2. **Random Forest:** Chuyên gia quét phổ rộng (Recall). Hoạt động dựa trên cơ chế Bagging, sinh ra hàng trăm cây quyết định độc lập trên các tập dữ liệu phụ. Tính đa dạng này giúp thuật toán bao quát toàn bộ không gian dữ liệu, ít bị học vẹt (Overfitting) và đảm bảo không bỏ lọt các mầm mống rủi ro (giảm False Negative).
+1. **XGBoost:** Mô hình giúp cải thiện Precision. Thuật toán này sử dụng kỹ thuật Gradient Boosting, xây dựng tuần tự các cây quyết định mà cây sau sẽ cố gắng sửa lỗi của cây trước. Nhờ vậy, nó hiệu quả trong việc tìm ra các ranh giới phân loại phức tạp, hạn chế dương tính giả (False Positive).
+2. **Random Forest:** Mô hình hỗ trợ tăng cường Recall. Hoạt động dựa trên cơ chế Bagging, sinh ra hàng trăm cây quyết định độc lập trên các tập dữ liệu phụ. Tính đa dạng này giúp thuật toán bao quát không gian dữ liệu, ít bị Overfitting và hạn chế bỏ sót các ca rủi ro (giảm False Negative).
 3. **Logistic Regression (L2):** Chuyên gia xử lý dữ liệu nhiều chiều. Đóng vai trò như một màng lọc tuyến tính ổn định. Việc áp dụng hình phạt L2 (Ridge Regularization) giúp thuật toán kiểm soát tốt 198 đặc trưng phân tử mà không bị nhiễu.
-4. **Meta-Classifier (Logistic Regression):** Đóng vai trò tổng tư lệnh để đưa ra quyết định chốt hạ.
+4. **Meta-Classifier (Logistic Regression):** Đóng vai trò mô hình bậc 2 (meta-classifier) để tổng hợp và đưa ra quyết định cuối cùng.
 
-### Kết Quả Phá Vỡ Mọi Kỷ Lục
-- **Chỉ số Phân Tách (ROC-AUC):** Đạt **0.9089** (Chỉ số xuất sắc Top-tier trong đánh giá mô hình y tế).
+### Kết Quả Đạt Được
+- **Chỉ số Phân Tách (ROC-AUC):** Đạt **0.9089**.
 - **Trạng thái cân bằng (Ngưỡng 0.50):** 
-  - Đạt **F1-Score: 0.73** (Cao nhất từ trước tới nay).
+  - Đạt **F1-Score: 0.73**.
   - Precision: **80%** | Recall: **67%** | Accuracy: **87.5%**.
 - **Trạng thái cảnh báo sớm (Ngưỡng 0.15):** 
-  - Chỉ cần hạ nhẹ ngưỡng quyết định, mô hình đạt **Recall 90%** (Tóm gọn 27/30 ca).
-  - Vẫn duy trì được **Precision 56.25%** và **Accuracy 80%**. Cứu vãn hoàn toàn sự sụp đổ Precision của phiên bản Random Forest trước đó.
+  - Chỉ cần hạ nhẹ ngưỡng quyết định, mô hình đạt **Recall 90%** (Nhận diện được 27/30 ca).
+  - Vẫn duy trì được **Precision 56.25%** và **Accuracy 80%**. Cải thiện sự sụt giảm Precision của phiên bản Random Forest trước đó.
 
 > [!TIP]
-> **Kết Luận:** Hệ thống Stacking Classifier này chính là phiên bản thực chiến (Production-Ready) hoàn mỹ nhất cho bộ dữ liệu DIA. Toàn bộ mã nguồn đã được đóng gói gọn gàng thành một file `drug_model.ipynb` hoàn chỉnh.
+> **Kết Luận:** Hệ thống Stacking Classifier này là phiên bản phù hợp cho bộ dữ liệu DIA. Toàn bộ mã nguồn đã được đóng gói thành một file `drug_model.ipynb` hoàn chỉnh.

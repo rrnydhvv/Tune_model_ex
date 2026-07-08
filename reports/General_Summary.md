@@ -11,12 +11,12 @@ Dữ liệu y sinh thường có đặc thù là **số lượng mẫu rất ít
 *   **Bước 1 - Chuẩn hoá dữ liệu (StandardScaler):** Đưa toàn bộ các đặc trưng hóa học về cùng một thang đo. Giúp các thuật toán (đặc biệt là SVM và Logistic Regression) không bị thiên vị bởi các đặc trưng có giá trị quá lớn.
 *   **Bước 2 - Xử lý mất cân bằng (SMOTE):** Vì số lượng mẫu độc tính/rủi ro thường rất ít so với mẫu an toàn, thuật toán `SMOTE` sẽ nội suy và sinh thêm các dữ liệu nhân tạo cho nhóm thiểu số. Nhờ vậy, mô hình sẽ học được cách nhận diện nhóm rủi ro thay vì bỏ qua chúng.
 *   **Bước 3 - Chọn lọc đặc trưng (Feature Selection):** (Áp dụng trên bài toán DIA). Sử dụng `RandomForest` làm màng lọc để tự động đánh giá tầm quan trọng của hàng trăm đặc trưng phân tử, qua đó vứt bỏ các đặc trưng nhiễu, giúp giải quyết lời nguyền số chiều.
-*   **Bước 4 - Trí tuệ tập thể (Stacking Classifier):** Thay vì dùng 1 thuật toán, hệ thống kết hợp nhiều thuật toán lại để bù trừ điểm yếu cho nhau:
-    *   **XGBoost:** Tìm kiếm các ranh giới siêu phức tạp, mang lại độ Chuẩn xác (Precision) rất cao.
-    *   **Random Forest:** Cấu trúc nhiều cây quyết định giúp quét diện rộng, chống Overfitting tốt và đẩy mạnh độ Nhạy (Recall).
-    *   **SVM / Logistic Regression:** Hoạt động rất ổn định trên không gian dữ liệu nhiều chiều.
-    *   **Meta-Classifier:** Cuối cùng, một mô hình Tổng tư lệnh (`Logistic Regression`) sẽ lấy dự đoán của tất cả các mô hình trên để đưa ra quyết định chốt hạ.
-*   **Bước 5 - Dịch chuyển ngưỡng quyết định (Threshold Tuning):** Mặc định, máy tính kết luận "CÓ BỆNH" nếu xác suất > 50%. Tuy nhiên trong y khoa, chúng ta ưu tiên "Thà bắt nhầm còn hơn bỏ sót". Bằng cách hạ ngưỡng quyết định (xuống 0.15 hoặc 0.22), thuật toán bị ép phải cảnh báo ngay cả khi rủi ro còn thấp, giúp tóm gọn thành công >90% ca bệnh.
+*   **Bước 4 - Kết hợp mô hình (Stacking Classifier):** Thay vì dùng 1 thuật toán, hệ thống kết hợp nhiều thuật toán lại để bù trừ điểm yếu cho nhau:
+    *   **XGBoost:** Tìm kiếm các ranh giới phức tạp, mang lại độ Chuẩn xác (Precision) cao.
+    *   **Random Forest:** Cấu trúc nhiều cây quyết định giúp quét diện rộng, hạn chế Overfitting và cải thiện độ Nhạy (Recall).
+    *   **SVM / Logistic Regression:** Hoạt động ổn định trên không gian dữ liệu nhiều chiều.
+    *   **Meta-Classifier:** Cuối cùng, một mô hình bậc 2 (`Logistic Regression`) sẽ lấy dự đoán của tất cả các mô hình trên để đưa ra quyết định cuối cùng.
+*   **Bước 5 - Dịch chuyển ngưỡng quyết định (Threshold Tuning):** Mặc định, máy tính phân loại dương tính nếu xác suất > 50%. Tuy nhiên trong y khoa, việc hạn chế bỏ sót thường được ưu tiên. Bằng cách hạ ngưỡng quyết định (xuống 0.15 hoặc 0.22), thuật toán sẽ tăng mức độ cảnh báo, giúp nhận diện thành công >90% ca bệnh.
 
 ---
 
@@ -27,7 +27,7 @@ Dữ liệu y sinh thường có đặc thù là **số lượng mẫu rất ít
 - **Chỉ số đánh giá tổng thể (ROC-AUC):** **0.8068**
 - **Khả năng Ứng dụng:**
   - **Chế độ cân bằng (Ngưỡng 0.50):** Độ chính xác 77.1%. Ưu tiên chẩn đoán chắc chắn, ít báo động giả.
-  - **Chế độ cảnh báo sớm (Ngưỡng 0.22):** Độ nhạy (Recall) đạt **90.9%**. Hệ thống tóm gọn gần như toàn bộ thuốc độc, phù hợp làm màng lọc bước 1.
+  - **Chế độ cảnh báo sớm (Ngưỡng 0.22):** Độ nhạy (Recall) đạt **90.9%**. Hệ thống nhận diện được phần lớn thuốc độc, phù hợp làm màng lọc bước 1.
 
 ---
 
@@ -35,7 +35,7 @@ Dữ liệu y sinh thường có đặc thù là **số lượng mẫu rất ít
 *Bài toán: Dự đoán nguy cơ gây tự miễn dịch (Drug Induced Autoimmunity) của thuốc.*
 - **Dữ liệu:** 477 mẫu (198 đặc trưng phân tử).
 - **Thuật toán:** SMOTE + SelectFromModel + Stacking (XGBoost + Random Forest + Logistic Regression).
-- **Chỉ số đánh giá tổng thể (ROC-AUC):** **0.9089** (Mức độ cực kỳ xuất sắc).
+- **Chỉ số đánh giá tổng thể (ROC-AUC):** **0.9089** (Mức khả quan).
 - **Khả năng Ứng dụng:**
   - **Chế độ cân bằng (Ngưỡng 0.50):** F1-Score đạt 0.73, Accuracy 87.5%.
   - **Chế độ cảnh báo sớm (Ngưỡng 0.15):** Độ nhạy (Recall) đạt **90.0%**. Hệ thống phát hiện được 27/30 ca bệnh, giữ được độ chuẩn xác (Precision) rất tốt ở mức 56.25%.
