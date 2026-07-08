@@ -62,4 +62,4 @@
   - Vẫn duy trì được **Precision 56.25%** và **Accuracy 80%**. Cải thiện sự sụt giảm Precision của phiên bản Random Forest trước đó.
 
 > [!TIP]
-> **Kết Luận:** Hệ thống Stacking Classifier này là phiên bản phù hợp cho bộ dữ liệu DIA. Toàn bộ mã nguồn đã được đóng gói thành một file `drug_model.ipynb` hoàn chỉnh.
+> **Kết Luận:** Hệ thống Stacking Classifier này là phiên bản phù hợp cho bộ dữ liệu DIA. Toàn bộ mã nguồn đã được lưu vào file `ML\drug_model.ipynb`.

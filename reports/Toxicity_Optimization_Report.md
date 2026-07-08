@@ -57,5 +57,5 @@ Hệ thống cho phép bác sĩ / nhà nghiên cứu lựa chọn 2 chế độ 
 
 ## 5. Kết Luận
 1. **Độ an toàn dữ liệu:** Mô hình đã được cô lập hoàn toàn giữa Train và Test thông qua `StratifiedKFold` và `ImbPipeline`, bảo đảm kết quả báo cáo trên đây là thực lực 100% của mô hình, không hề có hiện tượng học vẹt (Data Leakage).
-2. **Giá trị ứng dụng:** Tương tự như bài toán DIA, bạn có thể triển khai hệ thống này theo 2 màng lọc. Màng lọc 1 sử dụng ngưỡng 0.22 để loại bỏ nhanh các loại thuốc an toàn (giữ lại 90% mẫu độc tính). Màng lọc 2 sử dụng ngưỡng 0.50 để xác nhận lại.
-3. Toàn bộ mã nguồn và bảng kết quả trên đã được kết xuất an toàn vào file `ML\toxic_model.ipynb` để bạn sẵn sàng thuyết trình!
+2. **Giá trị ứng dụng:** Tương tự như bài toán DIA, có thể triển khai hệ thống này theo 2 màng lọc. Màng lọc 1 sử dụng ngưỡng 0.22 để loại bỏ nhanh các loại thuốc an toàn (giữ lại 90% mẫu độc tính). Màng lọc 2 sử dụng ngưỡng 0.50 để xác nhận lại.
+3. Toàn bộ mã nguồn và bảng kết quả trên đã được lưu vào file `ML\toxic_model.ipynb`.
