@@ -22,10 +22,10 @@ Việc dự đoán độc tính trên một tập dữ liệu y sinh nhỏ bé l
 Nhờ kế thừa toàn bộ "tinh hoa" từ bài toán DIA trước đó, mô hình Toxicity được xây dựng với các chốt chặn kỹ thuật cao nhất:
 - **Xử lý mất cân bằng:** Sử dụng `SMOTE` nằm gọn bên trong Cross-Validation (Tuyệt đối không rò rỉ dữ liệu).
 - **Tối ưu hóa siêu tham số (GridSearchCV):** Dò tìm tham số tốt nhất cho 3 mô hình độc lập:
-  - `SVM` (Đạt ROC-AUC CV: 0.57)
-  - `Random Forest` (Đạt ROC-AUC CV: 0.63 - Thể hiện sức mạnh vượt trội nhất trên tập này)
-  - `XGBoost` (Đạt ROC-AUC CV: 0.56)
-- **Stacking Classifier:** Sử dụng Logistic Regression làm Tổng tư lệnh (Meta-Classifier) để tổng hợp sức mạnh dự đoán của cả 3 mô hình trên.
+  - `SVM` (Đạt ROC-AUC CV: 0.57): Support Vector Machine kết hợp hàm nhân (kernel RBF) để ánh xạ 50 đặc trưng hóa học vào không gian đa chiều, từ đó tìm ra siêu mặt phẳng (hyperplane) uốn lượn phân cách giữa thuốc Độc và Không độc. Thuật toán này đặc biệt hiệu quả trên tập mẫu nhỏ.
+  - `Random Forest` (Đạt ROC-AUC CV: 0.63): Xây dựng một "khu rừng" gồm nhiều cây quyết định nhằm chống lại hiện tượng học vẹt do nhiễu. Thể hiện sức mạnh vượt trội nhất trên tập này nhờ khả năng tự động đánh giá và bỏ qua các đặc trưng ít quan trọng.
+  - `XGBoost` (Đạt ROC-AUC CV: 0.56): Thúc đẩy quá trình học thông qua việc sửa lỗi liên tục. Bằng cách giới hạn nghiêm ngặt độ sâu (max_depth=3) và tốc độ học (learning_rate=0.01) để tránh Overfitting trên tập nhỏ, thuật toán cung cấp thêm một góc nhìn sắc bén bổ trợ cho SVM và RF.
+- **Stacking Classifier:** Sử dụng `Logistic Regression` làm Tổng tư lệnh (Meta-Classifier). Mô hình này sẽ nhận lấy xác suất dự đoán của 3 mô hình trên làm đầu vào (kết hợp cả tư duy phi tuyến và tuyến tính) để đưa ra phán quyết sau cùng, đảm bảo độ chính xác và ổn định cao nhất.
 
 ---
 

@@ -47,9 +47,9 @@
 > Thay vì phải chịu sự đánh đổi giữa Precision và Recall, chúng tôi đã sử dụng kỹ thuật **Stacking Classifier** để tạo ra một "Trí tuệ tập thể".
 
 **Cấu trúc Stacking:**
-1. **XGBoost:** Chuyên gia tăng cường Precision.
-2. **Random Forest (CPU):** Chuyên gia quét phổ rộng (Recall).
-3. **Logistic Regression (L2):** Chuyên gia xử lý dữ liệu nhiều chiều.
+1. **XGBoost:** Chuyên gia tăng cường Precision. Thuật toán này sử dụng kỹ thuật Gradient Boosting, xây dựng tuần tự các cây quyết định mà cây sau sẽ cố gắng sửa lỗi của cây trước. Nhờ vậy, nó cực kỳ sắc bén trong việc tìm ra các ranh giới phân loại phức tạp, giảm thiểu tối đa báo động giả (False Positive).
+2. **Random Forest:** Chuyên gia quét phổ rộng (Recall). Hoạt động dựa trên cơ chế Bagging, sinh ra hàng trăm cây quyết định độc lập trên các tập dữ liệu phụ. Tính đa dạng này giúp thuật toán bao quát toàn bộ không gian dữ liệu, ít bị học vẹt (Overfitting) và đảm bảo không bỏ lọt các mầm mống rủi ro (giảm False Negative).
+3. **Logistic Regression (L2):** Chuyên gia xử lý dữ liệu nhiều chiều. Đóng vai trò như một màng lọc tuyến tính ổn định. Việc áp dụng hình phạt L2 (Ridge Regularization) giúp thuật toán kiểm soát tốt 198 đặc trưng phân tử mà không bị nhiễu.
 4. **Meta-Classifier (Logistic Regression):** Đóng vai trò tổng tư lệnh để đưa ra quyết định chốt hạ.
 
 ### Kết Quả Phá Vỡ Mọi Kỷ Lục
